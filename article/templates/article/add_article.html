@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block add_article_active %}active{% endblock add_article_active %}
+{%block title %}Add Article{%endblock%}
+{%block content %}
+{% load crispy_forms_tags %}
+<div class="container pt-5">
+  <h2>Write new Article</h2>
+  <form method="POST" class="uniForm">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}

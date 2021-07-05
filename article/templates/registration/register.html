@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block register %}active{% endblock register %}
+{%block title %}Register Page{%endblock%}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container pt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Register</li>
+        </ol>
+    </nav>
+    <h2>Register User</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{form|crispy}}
+        <input class="btn btn-info" type="submit" value="Register">
+        <a class="btn btn-primary" href="{% url 'login' %}">Back to login</a>
+    </form>
+</div>
+{% endblock %}
