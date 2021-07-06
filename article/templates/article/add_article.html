@@ -2,13 +2,32 @@
 {% block add_article_active %}active{% endblock add_article_active %}
 {%block title %}Add Article{%endblock%}
 {%block content %}
-{% load crispy_forms_tags %}
 <div class="container pt-5">
-  <h2>Write new Article</h2>
-  <form method="POST" class="uniForm">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+  {% if user.is_authenticated %}
+    <h2>Write new Article</h2>
+      <div class="form-group">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.media }}
+          {{ form.as_p|safe }}
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    <script>
+		  var name = "{{ user.id }}";
+		  document.getElementById("id_author").value = name;
+	  </script>
+    <script>
+     $(document).ready(function() {
+        $('#summernote').summernote({
+          tabsize: 2,
+          height: 100
+        });
+      });
+    </script>
+  {% else %}
+    <h2>Please login to add write a new article.</h2>
+    <a class="btn btn-info" href="{% url 'login' %}">login</a>
+  {% endif %}
 </div>
 {% endblock %}

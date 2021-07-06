@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block update_article_active %}active{% endblock update_article_active %}
+{%block title %}Update Article{%endblock%}
+{%block content %}
+{% load crispy_forms_tags %}
+<div class="container pt-5">
+  {% if user.is_authenticated %}
+    {% if user.id == article.author.id %}
+        <h2>Update Article</h2>
+        <div class="form-group">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ form.media }}
+              {{ form.as_p|safe }}
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <script>
+            var name = "{{ user.id }}";
+            document.getElementById("id_author").value = name;
+        </script>
+        <script>
+            $(document).ready(function() {
+                $('#summernote').summernote({
+                    tabsize: 2,
+                    height: 100
+                });
+            });
+        </script>
+    {% else %}
+		<h2>You're not allowed here! (and you know it...).</h2>
+        <a class="btn btn-info" href="{% url 'login' %}">login</a>
+    {% endif %}
+  {% else %}
+    <h2>Please login to add write a new article.</h2>
+    <a class="btn btn-info" href="{% url 'login' %}">login</a>
+  {% endif %}
+</div>
+{% endblock %}

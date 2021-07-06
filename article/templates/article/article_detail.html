@@ -1,26 +1,32 @@
 {% extends 'base.html' %}
 {% block article_detail_active %}active{% endblock article_detail_active %}
-{%block title %}{{post.title}}{%endblock%}
+{%block title %}{{article.title}}{%endblock%}
 {% block content %}
 <div class="container pt-5">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Articles</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{post.title}}</li>
+            <li class="breadcrumb-item active" aria-current="page">{{article.title}}</li>
         </ol>
     </nav>
-    <h3 class="my-1">{{post.title}}</h3>
-    <p class="mb-auto">{{post.content}}</p>
-    <p class="mb-auto text-muted">{{post.publish_date}}</p>
-    <div style="display:flex">
-        {% for tag in post.tags.all %}
+    <h3 class="my-1">{{article.title}}</h3>
+    <small>By:
+		{{ article.author.username }}
+    </small>
+    <!-- <div style="display:flex">
+        {% for tag in article.tags.all %}
             <a href="{% url 'tagged' tag.id %}" class="mr-1 badge badge-info">#{{ tag }}</a>
         {% endfor %}
-    </div>
-    <br>
+    </div> -->
+    <hr>
+    <p class="mb-auto">{{article.content|safe}}</p>
+
+    <hr>
     {% if user.is_authenticated %}
-        <a href="{% url 'edit_article' post.id %}" class="mr-1 btn btn-dark">Edit Article</a>
+        {% if user.id == article.author.id %}
+            <a href="{% url 'edit_article' article.id %}" class="mr-1 btn btn-dark">Edit Article</a>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock content %}
