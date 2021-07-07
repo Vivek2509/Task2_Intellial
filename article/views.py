@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.urls import reverse
 from .models import Article, Tag, ArticleTag
-from .form import ArticleForm, CustomUserCreationForm, PostForm, EditForm
+from .form import CustomUserCreationForm, PostForm, EditForm
 from django.db.models import Count
 
 
@@ -80,7 +80,7 @@ def detailArticle(request,id):
 @login_required
 def addArticle(request):
     if request.method == "POST":
-        form = ArticleForm(request.POST)
+        form = PostForm(request.POST)
         if form.is_valid():
             tag_list = form.cleaned_data['tag'].split(',')
             for i in tag_list:
@@ -92,7 +92,7 @@ def addArticle(request):
                 instance.tag_id.add(Tag.objects.get(name=i.strip()).id)
         return redirect(viewArticle)
     else:
-        form = ArticleForm()
+        form = PostForm()
         context = {
             'form':form,
         }
@@ -103,8 +103,7 @@ def addArticle(request):
 @login_required
 def editArticle(request, id):
     instance = get_object_or_404(Article, id=id)
-    form = ArticleForm(request.POST or None, instance=instance)
-
+    form = EditForm(request.POST or None, instance=instance)
     if form.is_valid():
         tag_list = form.cleaned_data['tag'].split(',')
         for i in tag_list:
@@ -116,15 +115,16 @@ def editArticle(request, id):
         new_tags = []
         for i in tag_list:
             new_tags.append(Tag.objects.get(name=i.strip()).id)
-
         article.tag_id.set(new_tags)
+
         return redirect(viewArticle)
 
     context = {
         'form':form,
+        'instance':instance
     }
 
-    return render(request, 'article/add_article.html', context)
+    return render(request, 'article/update_article.html', context)
 
 
 def tagged(request, id):
