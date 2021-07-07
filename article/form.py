@@ -2,11 +2,6 @@ from django import forms
 from .models import Article, Tag, ArticleTag
 from django.contrib.auth.forms import UserCreationForm
 
-class ArticleForm(forms.ModelForm):
-    class Meta:
-        model = Article
-        exclude = ['publish_date']
-
 class PostForm(forms.ModelForm):
 	class Meta:
 		model = Article
