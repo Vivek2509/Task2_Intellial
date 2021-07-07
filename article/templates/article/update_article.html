@@ -4,6 +4,12 @@
 {%block content %}
 {% load crispy_forms_tags %}
 <div class="container pt-5">
+  <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Update Article</li>
+      </ol>
+  </nav>
   {% if user.is_authenticated %}
     {% if user.id == article.author.id %}
         <h2>Update Article</h2>
@@ -32,7 +38,7 @@
         <a class="btn btn-info" href="{% url 'login' %}">login</a>
     {% endif %}
   {% else %}
-    <h2>Please login to add write a new article.</h2>
+    <h2>Please login to write a new article.</h2>
     <a class="btn btn-info" href="{% url 'login' %}">login</a>
   {% endif %}
 </div>

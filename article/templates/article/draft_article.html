@@ -21,11 +21,15 @@
                                         <div class="col p-4 d-flex flex-column position-static">
                                             <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title}}</a></h3>
                                             <p class="mb-auto">{{post.content|safe}}</p>
-                                            <!-- <div style="display:flex">
-                                                {% for tag in post.tags.all %}
-                                                    <a href="{% url 'tagged' tag.id %}" class="mr-1 badge badge-info">#{{ tag }}</a>
+                                            <div style="display:flex">
+                                                {% for key, values in article_tags %}
+                                                    {% if key == post.id %}
+                                                        {% for v in values %}
+                                                            <a href="" class="mr-1 badge badge-info">{{ v }}</a>
+                                                        {% endfor %}
+                                                    {% endif %}
                                                 {% endfor %}
-                                            </div> -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -34,14 +38,7 @@
                     </div>
             {% endif %}
         </div>
-        <!-- <div class="col-3">
-            Common Tags:
-            <p>
-            {% for mt in common_tags %}
-                <a href="{% url 'tagged' mt.id %}" class="badge badge-success">{{mt}}</a>
-            {% endfor %}
-            </p>
-        </div> -->
+        {% include 'article/common_tags.html'%}
     </div>
 </div>
 {% endblock %}

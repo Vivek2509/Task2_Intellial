@@ -18,11 +18,11 @@
                         <div class="cards">
                             <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
                                 <div class="col p-4 d-flex flex-column position-static">
-                                    <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title}}</a></h3>
-                                    <p class="mb-auto">{{post.content|safe}}</p>
+                                    <h3 class="my-1"><a href="{% url 'detail_article' post.0.id %}">{{post.0.title}}</a></h3>
+                                    <p class="mb-auto">{{post.0.content|safe}}</p>
                                     <div style="display:flex">
                                         {% for key, values in article_tags %}
-                                            {% if key == post.id %}
+                                            {% if key == post.0.id %}
                                                {% for v in values %}
                                                    <a href="" class="mr-1 badge badge-info">{{ v }}</a>
                                                 {% endfor %}
