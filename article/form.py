@@ -10,11 +10,16 @@ class PostForm(forms.Form):
 	published = forms.BooleanField()
 
 
-class EditForm(forms.Form):
-	title = forms.CharField()
-	content = forms.CharField(widget=forms.Textarea(attrs={'rows':3,'class': 'form-control','id':'summernote','name':'editordata'}))
-	tag = forms.CharField()
-	published = forms.BooleanField()
+class EditForm(forms.ModelForm):
+	class Meta:
+		model = Article
+		fields = ('title','content', 'tag' , 'published')
+
+		widgets = {
+			'title': forms.TextInput(attrs={'class': 'form-control'}),
+			'content': forms.Textarea(attrs={'class': 'form-control','id':'summernote','name':'editordata'}),
+			'tag': forms.TextInput(attrs={'class': 'form-control'}),
+		}
 
 
 class CustomUserCreationForm(UserCreationForm):
