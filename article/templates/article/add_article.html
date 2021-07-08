@@ -14,8 +14,9 @@
       <div class="form-group">
         <form method="POST" enctype="multipart/form-data">
           {% csrf_token %}
-          {{ form.media }}
-          {{ form.as_p|safe }}
+          {{ article_form.media }}
+          {{ article_form.as_p|safe }}
+          {{tag_form.as_p}}
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>

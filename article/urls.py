@@ -9,6 +9,6 @@ urlpatterns = [
     path('article/<int:id>/edit_article',editArticle, name="edit_article"),
     path('article/add_article',addArticle, name="add_article"),
     path('article/draft_article',draftArticle, name="draft_article"),
-    path('tag/<int:id>/', tagged, name="tagged"),
+    path('tag/<int:id>', tagged, name="tagged"),
     path("accounts/register/", register, name="register"),
 ]

@@ -11,15 +11,15 @@
     </nav>
     <div class="row">
         <div class="col-9">
-            <h2>Draft Article</h2>
             {% if user.is_authenticated %}
-                    <div class="row mb-2">
-                        {% for post in posts %}
+                <div class="row mb-2">
+                    {% for post in posts %}
+                        {% if user.id == post.author.id %}
                             <div class="col-md-6">
                                 <div class="cards">
                                     <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
                                         <div class="col p-4 d-flex flex-column position-static">
-                                            <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title}}</a></h3>
+                                            <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title|title}}</a></h3>
                                             <p class="mb-auto">{{post.content|safe}}</p>
                                             <div style="display:flex">
                                                 {% for key, values in article_tags %}
@@ -34,11 +34,21 @@
                                     </div>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="col-md-6">
+                            <h2>No draft at moment..</h2>
+                            <h3 class="my-1">
+                                <a class="btn btn-info" href="{% url 'add_article' %}">Add new Article</a>
+                            </h3>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         </div>
-        {% include 'article/common_tags.html'%}
+        {% if user.is_authenticated %}
+            {% include 'article/common_tags.html'%}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

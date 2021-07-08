@@ -8,7 +8,6 @@ class Article(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    tag = models.CharField(max_length=255)
     created_date = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField()
 
@@ -27,8 +26,9 @@ class Tag(models.Model):
 
 class ArticleTag(models.Model):
     article_id = models.ForeignKey(Article, on_delete=models.CASCADE)
+    tag = models.CharField(max_length=255)
     tag_id = models.ManyToManyField(Tag)
 
     def __str__(self):
-        return str(self.article_id)
+        return str(self.article_id) + " | " + str(self.tag)
 

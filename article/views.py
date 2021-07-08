@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import Article, Tag, ArticleTag
-from .form import CustomUserCreationForm, PostForm, EditForm
-from django.db.models import Count
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
+
+from .form import CustomUserCreationForm, EditForm, PostForm, TagForm
+from .models import Article, ArticleTag, Tag
 
 
 def register(request):
@@ -26,11 +27,16 @@ def viewArticle(request):
 
     article_tags = {}
     for post in posts:
-        article_tags[post.id] = post.tag.split(',')
+        tag_list = ArticleTag.objects.filter(
+            article_id=post.id).values_list('tag_id', flat=True)
+        tag_name = []
+        for tag in tag_list:
+            tag_name.append(Tag.objects.get(id=tag))
+        article_tags[post.id] = tag_name
 
     number_article = {}
     for tag in common_tags:
-        number_article[tag.id] = len(ArticleTag.objects.filter(tag_id=tag))
+        number_article[tag.id] = ArticleTag.objects.filter(tag_id=tag).count()
 
     context = {
         'posts': posts,
@@ -40,19 +46,26 @@ def viewArticle(request):
     }
     return render(request, 'article/home.html', context)
 
+
 @login_required
 def draftArticle(request):
-    posts = Article.objects.filter(published=False).order_by('-created_date');
+    posts = Article.objects.filter(
+        author=request.user, published=False).order_by('-created_date')
 
     common_tags = Tag.objects.all()
 
     article_tags = {}
     for post in posts:
-        article_tags[post.id] = post.tag.split(',')
+        tag_list = ArticleTag.objects.filter(
+            article_id=post.id).values_list('tag_id', flat=True)
+        tag_name = []
+        for tag in tag_list:
+            tag_name.append(Tag.objects.get(id=tag))
+        article_tags[post.id] = tag_name
 
     number_article = {}
     for tag in common_tags:
-        number_article[tag.id] = len(ArticleTag.objects.filter(tag_id=tag))
+        number_article[tag.id] = ArticleTag.objects.filter(tag_id=tag).count()
 
     context = {
         'posts': posts,
@@ -64,10 +77,14 @@ def draftArticle(request):
     return render(request, 'article/draft_article.html', context)
 
 
-def detailArticle(request,id):
+def detailArticle(request, id):
     article = get_object_or_404(Article, id=id)
     common_tags = Tag.objects.all()
-    article_tags = article.tag.split(',')
+    tag_list = ArticleTag.objects.filter(
+        article_id=article.id).values_list('tag_id', flat=True)
+    article_tags = []
+    for tag in tag_list:
+        article_tags.append(Tag.objects.get(id=tag))
 
     context = {
         'article': article,
@@ -80,21 +97,27 @@ def detailArticle(request,id):
 @login_required
 def addArticle(request):
     if request.method == "POST":
-        form = PostForm(request.POST)
-        if form.is_valid():
-            tag_list = form.cleaned_data['tag'].split(',')
+        article_form = PostForm(request.POST, prefix="article_form")
+        tag_form = TagForm(request.POST, prefix="tag_form")
+        if article_form.is_valid() and tag_form.is_valid():
+            tag_list = tag_form.cleaned_data['tag'].split(',')
             for i in tag_list:
                 if not Tag.objects.filter(name=i.strip()).exists():
-                    Tag.objects.create(name=i.strip(),slug=i.strip())
-            task = form.save()
-            instance = ArticleTag.objects.create(article_id=task)
+                    Tag.objects.create(name=i.strip(), slug=i.strip())
+            article_post = article_form.save()
+            article_tag = tag_form.save(commit=False)
+            article_tag.article_id = article_post
+            article_tag.save()
             for i in tag_list:
-                instance.tag_id.add(Tag.objects.get(name=i.strip()).id)
+                article_tag.tag_id.add(Tag.objects.get(name=i.strip()).id)
+            article_tag.save()
         return redirect(viewArticle)
     else:
-        form = PostForm()
+        article_form = PostForm(prefix="article_form")
+        tag_form = TagForm(prefix="tag_form")
         context = {
-            'form':form,
+            'article_form': article_form,
+            'tag_form': tag_form,
         }
 
     return render(request, 'article/add_article.html', context)
@@ -102,26 +125,34 @@ def addArticle(request):
 
 @login_required
 def editArticle(request, id):
-    instance = get_object_or_404(Article, id=id)
-    form = EditForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        tag_list = form.cleaned_data['tag'].split(',')
+    article_instance = get_object_or_404(Article, id=id)
+    article_form = EditForm(request.POST or None,
+                            instance=article_instance, prefix="article_form")
+
+    tag_instance = get_object_or_404(
+        ArticleTag, article_id=article_instance.id)
+    tag_form = TagForm(
+        request.POST or None, instance=tag_instance, prefix="tag_form")
+
+    if article_form.is_valid() and tag_form.is_valid():
+        tag_list = tag_form.cleaned_data['tag'].split(',')
         for i in tag_list:
             if not Tag.objects.filter(name=i.strip()).exists():
-                Tag.objects.create(name=i.strip(),slug=i.strip())
-        task = form.save()
-
-        article = ArticleTag.objects.get(article_id=task)
+                Tag.objects.create(name=i.strip(), slug=i.strip())
+        article_post = article_form.save()
+        article_tag = ArticleTag.objects.get(article_id=article_post)
         new_tags = []
         for i in tag_list:
             new_tags.append(Tag.objects.get(name=i.strip()).id)
-        article.tag_id.set(new_tags)
+        article_tag.tag_id.set(new_tags)
 
         return redirect(viewArticle)
 
     context = {
-        'form':form,
-        'instance':instance
+        'article_form': article_form,
+        'tag_form': tag_form,
+        'article_instance': article_instance,
+        'tag_instance': tag_instance
     }
 
     return render(request, 'article/update_article.html', context)
@@ -130,20 +161,25 @@ def editArticle(request, id):
 def tagged(request, id):
     common_tags = Tag.objects.all()
     tag = get_object_or_404(Tag, id=id)
-    article_ids = ArticleTag.objects.filter(tag_id=tag)
+    article_ids = ArticleTag.objects.filter(
+        tag_id=tag).values_list('article_id', flat=True)
 
     posts = []
     for article_id in article_ids:
-        posts.append(Article.objects.filter(id=article_id.id))
+        posts.append(Article.objects.get(id=article_id))
 
     article_tags = {}
     for post in posts:
-        article_tags[post[0].id] = post[0].tag.split(',')
+        tag_list = ArticleTag.objects.filter(
+            article_id=post).values_list('tag_id', flat=True)
+        tag_name = []
+        for tag in tag_list:
+            tag_name.append(Tag.objects.get(id=tag))
+        article_tags[post.id] = tag_name
 
     number_article = {}
     for tag in common_tags:
-        number_article[tag.id] = len(ArticleTag.objects.filter(tag_id=tag))
-
+        number_article[tag.id] = ArticleTag.objects.filter(tag_id=tag).count()
 
     context = {
         'tag': tag,

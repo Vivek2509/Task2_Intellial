@@ -11,13 +11,14 @@
       </ol>
   </nav>
   {% if user.is_authenticated %}
-    {% if user.id == instance.author.id %}
+    {% if user.id == article_instance.author.id %}
       <h2>Update Article</h2>
       <div class="form-group">
           <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.media }}
-            {{ form.as_p|safe }}
+            {{ article_form.media }}
+            {{ article_form.as_p|safe }}
+            {{tag_form.as_p}}
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
       </div>
