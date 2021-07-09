@@ -91,11 +91,16 @@ def addArticle(request):
                         new_tags.append(tag.strip())
 
             # Add tag in to Tag table
-            tag_instances = [ArticleTag(name=tag, slug=tag)
+            tag_instances = [Tag(name=tag, slug=tag)
                              for tag in new_tags]
             Tag.objects.bulk_create(tag_instances)
 
             article_post = article_form.save()
+
+            new_tags = []
+            for tag in tag_list:
+                if tag != ' ' and tag != '':
+                    new_tags.append(tag.strip())
 
             # Create new ArticleTag instance
             article_tag_instances = [ArticleTag(
@@ -130,18 +135,28 @@ def editArticle(request, id):
                 if not Tag.objects.filter(name=tag.strip()).exists():
                     new_tags.append(tag.strip())
 
-        tag_instances = [ArticleTag(name=tag, slug=tag)
+        tag_instances = [Tag(name=tag, slug=tag)
                          for tag in new_tags]
         Tag.objects.bulk_create(tag_instances)
 
         article_post = article_form.save()
 
+        new_tags = []
+        for tag in tag_list:
+            if tag != ' ' and tag != '':
+                new_tags.append(tag.strip())
+
         # Delete old ArticleTag instance
-        ArticleTag.objects.filter(article=article_post).delete()
+        delete_tags = list(set(article_tags) - set(new_tags))
+        for tag in delete_tags:
+            ArticleTag.objects.get(article=article_post,
+                                   tag=Tag.objects.get(name=tag)).delete()
 
         # Add new ArticleTag instance
+        add_tags = list(set(new_tags) - set(article_tags))
         article_tag_instances = [ArticleTag(
-            article=article_post, tag=Tag.objects.get(name=tag)) for tag in new_tags]
+            article=article_post, tag=Tag.objects.get(name=tag)) for tag in add_tags]
+
         ArticleTag.objects.bulk_create(article_tag_instances)
 
         return redirect(viewArticle)

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block login %}active{% endblock login %}
 {%block title %}Login Page{%endblock%}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
@@ -13,36 +14,11 @@
     </nav>
 
     <h2>Login User</h2>
-
-    {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
-    {% endif %}
-    {% if next %}
-        {% if user.is_authenticated %}
-            <p>Your account doesn't have access to this page. To proceed,
-                please login with an account that has access.
-            </p>
-        {% else %}
-            <p>Please login to see this page.</p>
-        {% endif %}
-    {% endif %}
-
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        <table>
-            <tr>
-                <td>{{ form.username.label_tag }}</td>
-                <td>{{ form.username }}</td>
-            </tr>
-            <tr>
-                <td>{{ form.password.label_tag }}</td>
-                <td>{{ form.password }}</td>
-            </tr>
-        </table>
-
+        {{form|crispy}}
         <input class="btn btn-info" type="submit" value="login">
         <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
-        <input type="hidden" name="next" value="{{ next }}">
     </form>
 </div>
 {% endblock %}
