@@ -65,7 +65,7 @@ def detailArticle(request, id):
 
             return render(request, 'article/article_detail.html', context)
         else:
-            return redirect("login")
+            return redirect(viewArticle)
     else:
         article_tags = ArticleTag.objects.filter(article=article.id)
 
