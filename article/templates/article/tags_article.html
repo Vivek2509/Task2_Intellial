@@ -1,42 +1,42 @@
 {% extends 'base.html' %}
 {% block home_active %}active{% endblock home_active %}
-{%block title %}Latest Article{%endblock%}
+{%block title %}Tag - {{tag}}{%endblock%}
 {%block content %}
 <div class="container pt-5">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Latest Article</li>
+            <li class="breadcrumb-item">Tags</li>
+            <li class="breadcrumb-item active" aria-current="page"><code>{{tag}}</code></li>
         </ol>
     </nav>
     <div class="row">
         <div class="col-9">
-            <h2>Latest Article</h2>
+            <h2>Article related to <code>{{tag}}</code> tag </h2>
             <div class="row mb-2">
-                {% for post in posts %}
-                    <div class="col-md-6">
-                        <div class="cards">
-                            <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
-                                <div class="col p-4 d-flex flex-column position-static">
-                                    <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title}}</a></h3>
-                                    <p class="mb-auto">{{post.content|safe}}</p>
-                                    <div style="display:flex">
-                                        {% for key, values in article_tags %}
-                                            {% if key == post.id %}
-                                               {% for v in values %}
-                                                   <a href="" class="mr-1 badge badge-info">{{ v }}</a>
-                                                {% endfor %}
-                                            {% endif %}
-                                        {% endfor %}
+                {% for i in articles %}
+                    {% if i.article.published %}
+                        <div class="col-md-6">
+                            <div class="cards">
+                                <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
+                                    <div class="col p-4 d-flex flex-column position-static">
+                                        <h3 class="my-1"><a href="{% url 'detail_article' i.article.id %}">{{i.article.title|title}}</a></h3>
+                                        <p class="mb-auto">{{i.article.content|safe}}</p>
+                                        <div style="display:flex">
+                                            {% for article_tag in article_tags %}
+                                                {% if article_tag.article.id == i.article.id %}
+                                                    <a href="{% url 'tagged' article_tag.tag.id %}" class="mr-1 badge badge-info">{{ article_tag.tag }}</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
-        {% include 'article/common_tags.html'%}
     </div>
 </div>
 {% endblock %}

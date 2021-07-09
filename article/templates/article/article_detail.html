@@ -6,17 +6,16 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item">Articles</li>
-            <li class="breadcrumb-item active" aria-current="page">{{article.title}}</li>
+            <li class="breadcrumb-item active" aria-current="page">{{article.title|title}}</li>
         </ol>
     </nav>
-    <h3 class="my-1">{{article.title}}</h3>
-    <small>By:
+    <h3 class="my-2">{{article.title|title}}</h3>
+    <small>By : -
 		{{ article.author.username }}
     </small>
-    <div style="display:flex">
-        {% for tag in article_tags %}
-            <a href="" class="mr-1 badge badge-info">{{ tag }}</a>
+    <div style="display:flex my-2">
+        {% for article_tag in article_tags %}
+            <a href="{% url 'tagged' article_tag.tag.id %}" class="mr-1 badge badge-info">{{ article_tag.tag }}</a>
         {% endfor %}
     </div>
     <hr>

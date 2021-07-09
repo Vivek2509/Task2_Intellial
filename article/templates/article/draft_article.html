@@ -10,23 +10,21 @@
         </ol>
     </nav>
     <div class="row">
-        <div class="col-9">
+        <div class="col-12">
             {% if user.is_authenticated %}
                 <div class="row mb-2">
-                    {% for post in posts %}
-                        {% if user.id == post.author.id %}
+                    {% for article in articles %}
+                        {% if user.id == article.author.id %}
                             <div class="col-md-6">
                                 <div class="cards">
                                     <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
                                         <div class="col p-4 d-flex flex-column position-static">
-                                            <h3 class="my-1"><a href="{% url 'detail_article' post.id %}">{{post.title|title}}</a></h3>
-                                            <p class="mb-auto">{{post.content|safe}}</p>
+                                            <h3 class="my-1"><a href="{% url 'detail_article' article.id %}">{{article.title|title}}</a></h3>
+                                            <p class="mb-auto">{{article.content|safe}}</p>
                                             <div style="display:flex">
-                                                {% for key, values in article_tags %}
-                                                    {% if key == post.id %}
-                                                        {% for v in values %}
-                                                            <a href="" class="mr-1 badge badge-info">{{ v }}</a>
-                                                        {% endfor %}
+                                                {% for article_tag in article_tags %}
+                                                    {% if article_tag.article.id == article.id %}
+                                                        <a href="" class="mr-1 badge badge-info">{{ article_tag.tag }}</a>
                                                     {% endif %}
                                                 {% endfor %}
                                             </div>
@@ -46,9 +44,6 @@
                 </div>
             {% endif %}
         </div>
-        {% if user.is_authenticated %}
-            {% include 'article/common_tags.html'%}
-        {% endif %}
     </div>
 </div>
 {% endblock %}

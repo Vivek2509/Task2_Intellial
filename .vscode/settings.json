@@ -1,4 +1,3 @@
 {
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
-    "python.linting.flake8Enabled": false,
 }

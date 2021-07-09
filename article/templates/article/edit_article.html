@@ -1,30 +1,35 @@
 {% extends 'base.html' %}
 {% block update_article_active %}active{% endblock update_article_active %}
-{%block title %}Update Article{%endblock%}
+{%block title %}Edit Article{%endblock%}
 {%block content %}
 {% load crispy_forms_tags %}
 <div class="container pt-5">
   <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Update Article</li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_article' article_instance.id %}">{{article_instance.title}}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Edit Article</li>
       </ol>
   </nav>
   {% if user.is_authenticated %}
     {% if user.id == article_instance.author.id %}
-      <h2>Update Article</h2>
+      <h2>Edit Article</h2>
       <div class="form-group">
           <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ article_form.media }}
             {{ article_form.as_p|safe }}
-            {{tag_form.as_p}}
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
       </div>
       <script>
         var name = "{{ user.id }}";
         document.getElementById("id_author").value = name;
+      </script>
+      <script>
+        let tag_name = '{% for article_tag in article_tags %}{{article_tag }} , {% endfor %}'
+        document.getElementById("id_tag").value = tag_name;
+
       </script>
       <script>
         $(document).ready(function() {

@@ -2,16 +2,12 @@
 <div class="col-3">
     Common Tags:
     <p>
-        {% for mt in common_tags %}
-            {% for key, values in number_article %}
-                {% if mt.id == key %}
-                    {% if values != 0 %}
-                        <a href="{% url 'tagged' mt.id %}" class="badge badge-success">
-                            {{values}} {{mt}}
-                        </a>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
+        {% for tags_number in tags_numbers %}
+            {% if tags_number.tag_count != 0 %}
+                <a href="{% url 'tagged' tags_number.tag__id %}" class="badge badge-success">
+                    {{tags_number.tag_count}} {{tags_number.tag__name}}
+                </a>
+            {% endif %}
         {% endfor %}
     </p>
 </div>
