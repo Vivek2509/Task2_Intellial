@@ -6,7 +6,7 @@ from .models import Article
 
 class PostForm(forms.ModelForm):
 
-    tag = forms.CharField(label='tag', widget=forms.TextInput(),
+    tag = forms.CharField(label='tag', widget=forms.TextInput(attrs={'placeholder': 'Enter tags separete by comma'}),
                           required=True,)
 
     class Meta:
@@ -17,6 +17,7 @@ class PostForm(forms.ModelForm):
             'author': forms.TextInput(attrs={'class': 'form-control', 'value': '', 'id': 'id_author', 'type': 'hidden'}),
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'content': forms.Textarea(attrs={'class': 'form-control', 'id': 'summernote', 'name': 'editordata'}),
+            'tag': forms.TextInput(attrs={'class': 'form-control', 'value': '', 'id': 'id_tag'}),
         }
 
 
