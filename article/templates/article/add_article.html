@@ -65,28 +65,12 @@
         }
       }
 
-
-      $('#contentcheck').hide();
-      let contentCheckError = true;
-
-      function contentValidate() {
-        let contentValue = $('#content').val();
-        if (contentValue.length == '') {
-          $('#contentcheck').show();
-          contentCheckError = false;
-          return false;
-        }else {
-          $('#contentcheck').hide();
-        }
-      }
-
       function validate(){
         titleValidate()
-        contentValidate()
       }
       $(document).on('submit', '#add_article',function(e){
         validate();
-        if ((titleCheckError == true) && (contentCheckError == true)){
+        if ((titleCheckError == true){
           e.preventDefault();
           $.ajax({
             type: "POST",
