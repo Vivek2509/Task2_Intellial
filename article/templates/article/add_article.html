@@ -25,7 +25,6 @@
         <div class="form-group">
           <label>Content</label>
           <textarea class="form-control" required id="content"></textarea>
-          <h5 id="contentcheck" style="color: red;" >**Title is missing</h5>
         </div>
         <div class="form-group">
           <label>Published</label>
@@ -70,7 +69,7 @@
       }
       $(document).on('submit', '#add_article',function(e){
         validate();
-        if ((titleCheckError == true){
+        if (titleCheckError == true){
           e.preventDefault();
           $.ajax({
             type: "POST",

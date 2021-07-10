@@ -6,38 +6,106 @@
   <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'detail_article' article_instance.id %}">{{article_instance.title}}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'detail_article' article.id %}">{{article.title}}</a></li>
           <li class="breadcrumb-item active" aria-current="page">Edit Article</li>
       </ol>
   </nav>
   {% if user.is_authenticated %}
-    {% if user.id == article_instance.author.id %}
+    {% if user.id == article.author.id %}
       <h2>Edit Article</h2>
-      <div class="form-group">
-          <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ article_form.media }}
-            {{ article_form.as_p|safe }}
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </form>
-      </div>
-      <script>
-        var name = "{{ user.id }}";
-        document.getElementById("id_author").value = name;
-      </script>
-      <script>
-        let tag_name = '{% for article_tag in article_tags %}{{article_tag }} , {% endfor %}'
-        document.getElementById("id_tag").value = tag_name;
+      <div>
+      <form method="POST" id='add_article' enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <input class="form-control" id="author" required type="hidden" value="" >
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" class="form-control" required id="title" value="{{article.title}}" placeholder="Title Of Article">
+          <h5 id="titlecheck" style="color: red;" >**Title is missing</h5>
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea class="form-control" required id="content">{{article.content|safe}}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Published</label>
+          {% if article.published %}
+            <input type="checkbox" id="published" name="published" checked value="checked">
+          {% else %}
+            <input type="checkbox" id="published" name="published" value="checked">
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label>Tag</label>
+          <input type="text" class="form-control" id="tag" value="" placeholder="Add tags separated by comma">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    <script>
+		  var name = "{{ user.id }}";
+		  document.getElementById("author").value = name;
 
-      </script>
-      <script>
-        $(document).ready(function() {
-          $('#summernote').summernote({
-            tabsize: 2,
-            height: 400
-          });
+      let tag_name = '{% for article_tag in article_tags %}{{article_tag }} , {% endfor %}'
+      document.getElementById("tag").value = tag_name;
+    </script>
+    <script>
+     $(document).ready(function() {
+        $('#content').summernote({
+          tabsize: 2,
+          height: 400
         });
-      </script>
+      });
+    </script>
+    <script>
+      $('#titlecheck').hide();
+      let titleCheckError = true;
+
+      function titleValidate() {
+        let titleValue = $('#title').val();
+        if (titleValue.length == '') {
+          $('#titlecheck').show();
+          titleCheckError = false;
+          return false;
+        }else {
+          $('#titlecheck').hide();
+        }
+      }
+
+      function validate(){
+        titleValidate()
+      }
+      $(document).on('submit', '#add_article',function(e){
+        validate();
+        if (titleCheckError == true){
+          e.preventDefault();
+          $.ajax({
+            type: "POST",
+            url: "{% url 'edit_article' article.id  %}",
+            data:{
+              id: {{article.id}},
+              author:$('#author').val(),
+              title:$('#title').val(),
+              content:$('#content').val(),
+              published:$('#published').prop("checked"),
+              tag:$('#tag').val(),
+              csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+              action: 'post',
+            },
+            success: function(response){
+              window.location="/"
+            },
+            error: function (response) {
+              alert('Try again')
+            }
+          })
+          return false
+        }else{
+          return false;
+        }
+      })
+    </script>
     {% else %}
       <h2>Please login with right access.</h2>
       <a class="btn btn-info" href="{% url 'login' %}">login</a>

@@ -1,12 +1,12 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .form import CustomUserCreationForm, EditForm
+from .form import CustomUserCreationForm
 from .models import Article, ArticleTag, Tag
-from django.http import HttpResponse
 
 
 def register(request):
@@ -84,7 +84,7 @@ def addArticle(request):
         title = request.POST.get('title')
         content = request.POST.get('content')
         published = request.POST.get('published') == 'true'
-        tag_list = request.POST.get('tag').split(',')
+        tag_list = list(set(request.POST.get('tag').split(',')))
 
         article_instance = Article.objects.create(
             author=request.user,
@@ -121,15 +121,26 @@ def addArticle(request):
 
 @login_required
 def editArticle(request, id):
-    article_instance = get_object_or_404(Article, id=id)
-    article_form = EditForm(request.POST or None, instance=article_instance)
-
+    article = get_object_or_404(Article, id=id)
     # For send data to form as instance
     article_tags = ArticleTag.objects.filter(
-        article=article_instance.id).values_list('tag__name', flat=True)
+        article=article.id).values_list('tag__name', flat=True)
 
-    if article_form.is_valid():
-        tag_list = article_form.cleaned_data['tag'].split(',')
+    if request.POST.get('action') == 'post':
+        id = request.POST.get('id')
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        published = request.POST.get('published') == 'true'
+        tag_list = list(set(request.POST.get('tag').split(',')))
+
+        Article.objects.filter(id=id).update(
+            title=title,
+            content=content,
+            published=published
+        )
+        article_instance = get_object_or_404(Article, id=id)
+        article_tags = ArticleTag.objects.filter(
+            article=article_instance.id).values_list('tag__name', flat=True)
 
         new_tags = []
         for tag in tag_list:
@@ -141,8 +152,6 @@ def editArticle(request, id):
                          for tag in new_tags]
         Tag.objects.bulk_create(tag_instances)
 
-        article_post = article_form.save()
-
         new_tags = []
         for tag in tag_list:
             if tag != ' ' and tag != '':
@@ -151,25 +160,25 @@ def editArticle(request, id):
         # Delete old ArticleTag instance
         delete_tags = list(set(article_tags) - set(new_tags))
         for tag in delete_tags:
-            ArticleTag.objects.get(article=article_post,
+            ArticleTag.objects.get(article=article_instance,
                                    tag=Tag.objects.get(name=tag)).delete()
 
         # Add new ArticleTag instance
         add_tags = list(set(new_tags) - set(article_tags))
+        print(add_tags)
         article_tag_instances = [ArticleTag(
-            article=article_post, tag=Tag.objects.get(name=tag)) for tag in add_tags]
+            article=article_instance, tag=Tag.objects.get(name=tag)) for tag in add_tags]
 
         ArticleTag.objects.bulk_create(article_tag_instances)
 
-        return redirect(viewArticle)
+        return HttpResponse()
+    else:
+        context = {
+            'article': article,
+            'article_tags': article_tags
+        }
 
-    context = {
-        'article_form': article_form,
-        'article_instance': article_instance,
-        'article_tags': article_tags
-    }
-
-    return render(request, 'article/edit_article.html', context)
+        return render(request, 'article/edit_article.html', context)
 
 
 def tagged(request, id):
