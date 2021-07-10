@@ -11,25 +11,107 @@
   </nav>
   {% if user.is_authenticated %}
     <h2>Write new Article</h2>
-      <div class="form-group">
-        <form method="POST" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ article_form.media }}
-          {{ article_form.as_p|safe }}
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-      </div>
+    <div>
+      <form method="POST" id='add_article' enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <input class="form-control" id="author" required type="hidden" value="" >
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" class="form-control" required id="title" placeholder="Title Of Article">
+          <h5 id="titlecheck" style="color: red;" >**Title is missing</h5>
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea class="form-control" required id="content"></textarea>
+          <h5 id="contentcheck" style="color: red;" >**Title is missing</h5>
+        </div>
+        <div class="form-group">
+          <label>Published</label>
+          <input type="checkbox" id="published" name="published" value="checked">
+        </div>
+        <div class="form-group">
+          <label>Tag</label>
+          <input type="text" class="form-control" id="tag" placeholder="Add tags separated by comma">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
     <script>
 		  var name = "{{ user.id }}";
-		  document.getElementById("id_author").value = name;
+		  document.getElementById("author").value = name;
 	  </script>
     <script>
      $(document).ready(function() {
-        $('#summernote').summernote({
+        $('#content').summernote({
           tabsize: 2,
           height: 400
         });
       });
+    </script>
+    <script>
+      $('#titlecheck').hide();
+      let titleCheckError = true;
+
+      function titleValidate() {
+        let titleValue = $('#title').val();
+        if (titleValue.length == '') {
+          $('#titlecheck').show();
+          titleCheckError = false;
+          return false;
+        }else {
+          $('#titlecheck').hide();
+        }
+      }
+
+
+      $('#contentcheck').hide();
+      let contentCheckError = true;
+
+      function contentValidate() {
+        let contentValue = $('#content').val();
+        if (contentValue.length == '') {
+          $('#contentcheck').show();
+          contentCheckError = false;
+          return false;
+        }else {
+          $('#contentcheck').hide();
+        }
+      }
+
+      function validate(){
+        titleValidate()
+        contentValidate()
+      }
+      $(document).on('submit', '#add_article',function(e){
+        validate();
+        if ((titleCheckError == true) && (contentCheckError == true)){
+          e.preventDefault();
+          $.ajax({
+            type: "POST",
+            url: "{% url 'add_article' %}",
+            data:{
+              author:$('#author').val(),
+              title:$('#title').val(),
+              content:$('#content').val(),
+              published:$('#published').prop("checked"),
+              tag:$('#tag').val(),
+              csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+              action: 'post',
+            },
+            success: function(response){
+              window.location="/"
+            },
+            error: function (response) {
+              alert('Try again')
+            }
+          })
+          return false
+        }else{
+          return false;
+        }
+      })
     </script>
   {% else %}
     <h2>Please login to add write a new article.</h2>

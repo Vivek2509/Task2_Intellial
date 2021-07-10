@@ -4,8 +4,9 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .form import CustomUserCreationForm, EditForm, PostForm
+from .form import CustomUserCreationForm, EditForm
 from .models import Article, ArticleTag, Tag
+from django.http import HttpResponse
 
 
 def register(request):
@@ -79,42 +80,43 @@ def detailArticle(request, id):
 
 @login_required
 def addArticle(request):
-    if request.method == "POST":
-        article_form = PostForm(request.POST)
-        if article_form.is_valid():
-            tag_list = article_form.cleaned_data['tag'].split(',')
+    if request.POST.get('action') == 'post':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        published = request.POST.get('published') == 'true'
+        tag_list = request.POST.get('tag').split(',')
 
-            new_tags = []
-            for tag in tag_list:
-                if tag != ' ' and tag != '':
-                    if not Tag.objects.filter(name=tag.strip()).exists():
-                        new_tags.append(tag.strip())
+        article_instance = Article.objects.create(
+            author=request.user,
+            title=title,
+            content=content,
+            published=published
+        )
 
-            # Add tag in to Tag table
-            tag_instances = [Tag(name=tag, slug=tag)
-                             for tag in new_tags]
-            Tag.objects.bulk_create(tag_instances)
-
-            article_post = article_form.save()
-
-            new_tags = []
-            for tag in tag_list:
-                if tag != ' ' and tag != '':
+        new_tags = []
+        for tag in tag_list:
+            if tag != ' ' and tag != '':
+                if not Tag.objects.filter(name=tag.strip()).exists():
                     new_tags.append(tag.strip())
 
-            # Create new ArticleTag instance
-            article_tag_instances = [ArticleTag(
-                article=article_post, tag=Tag.objects.get(name=tag)) for tag in new_tags]
-            ArticleTag.objects.bulk_create(article_tag_instances)
+        # Add tag in to Tag table
+        tag_instances = [Tag(name=tag, slug=tag)
+                         for tag in new_tags]
+        Tag.objects.bulk_create(tag_instances)
 
-        return redirect(viewArticle)
+        new_tags = []
+        for tag in tag_list:
+            if tag != ' ' and tag != '':
+                new_tags.append(tag.strip())
+
+        # Create new ArticleTag instance
+        article_tag_instances = [ArticleTag(
+            article=article_instance, tag=Tag.objects.get(name=tag)) for tag in new_tags]
+        ArticleTag.objects.bulk_create(article_tag_instances)
+
+        return HttpResponse()
     else:
-        article_form = PostForm()
-        context = {
-            'article_form': article_form,
-        }
-
-    return render(request, 'article/add_article.html', context)
+        return render(request, 'article/add_article.html')
 
 
 @login_required
