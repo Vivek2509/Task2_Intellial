@@ -177,15 +177,10 @@ def tagged(request, id):
     article_ids = [article.article.id for article in articles]
 
     article_tags = ArticleTag.objects.filter(article__in=article_ids)
-    print(article_tags)
-
-    tags_numbers = article_tags.values(
-        'tag__name', 'tag__id').annotate(tag_count=Count('article'))
 
     context = {
         'tag': tag,
         'articles': articles,
         'article_tags': article_tags,
-        'tags_numbers': tags_numbers
     }
     return render(request, 'article/tags_article.html', context)
