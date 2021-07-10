@@ -2,10 +2,10 @@
 <div class="col-3">
     Common Tags:
     <p>
-        {% for tags_number in tags_numbers %}
-            {% if tags_number.tag_count != 0 %}
-                <a href="{% url 'tagged' tags_number.tag__id %}" class="badge badge-success">
-                    {{tags_number.tag_count}} {{tags_number.tag__name}}
+        {% for tag_number in tag_numbers %}
+            {% if tag_number.tag_count != 0 %}
+                <a href="{% url 'tagged' tag_number.tag__id %}" class="badge badge-success">
+                    {{tag_number.tag_count}} {{tag_number.tag__name}}
                 </a>
             {% endif %}
         {% endfor %}

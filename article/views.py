@@ -13,47 +13,48 @@ def register(request):
     if request.method == "GET":
         return render(request, "registration/register.html", {"form": CustomUserCreationForm})
     elif request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+        register_form = CustomUserCreationForm(request.POST)
+        if register_form.is_valid():
+            user = register_form.save()
             login(request, user)
             return redirect(reverse("home"))
 
 
-def viewArticle(request):
+def view_article(request):
     articles = Article.objects.filter(published=True).order_by('-created_date')
-    article_ids = [article.id for article in articles]
 
+    article_ids = [article.id for article in articles]
     article_tags = ArticleTag.objects.filter(article__in=article_ids)
 
-    tags_numbers = article_tags.values(
+    tag_numbers = article_tags.values(
         'tag__name', 'tag__id').annotate(tag_count=Count('article'))
 
     context = {
         'articles': articles,
         'article_tags': article_tags,
-        'tags_numbers': tags_numbers,
+        'tag_numbers': tag_numbers,
     }
+
     return render(request, 'article/home.html', context)
 
 
 @login_required
-def draftArticle(request):
+def draft_article(request):
     articles = Article.objects.filter(
         author=request.user, published=False).order_by('-created_date')
 
     article_ids = [article.id for article in articles]
-
     article_tags = ArticleTag.objects.filter(article__in=article_ids)
 
     context = {
         'articles': articles,
         'article_tags': article_tags,
     }
+
     return render(request, 'article/draft_article.html', context)
 
 
-def detailArticle(request, id):
+def detail_article(request, id):
     article = get_object_or_404(Article, id=id)
     if not article.published:
         if article.author == request.user:
@@ -66,7 +67,7 @@ def detailArticle(request, id):
 
             return render(request, 'article/article_detail.html', context)
         else:
-            return redirect(viewArticle)
+            return redirect(view_article)
     else:
         article_tags = ArticleTag.objects.filter(article=article.id)
 
@@ -79,13 +80,14 @@ def detailArticle(request, id):
 
 
 @login_required
-def addArticle(request):
+def add_article(request):
     if request.POST.get('action') == 'post':
         title = request.POST.get('title')
         content = request.POST.get('content')
         published = request.POST.get('published') == 'true'
         tag_list = list(set(request.POST.get('tag').split(',')))
 
+        # Create new Article
         article_instance = Article.objects.create(
             author=request.user,
             title=title,
@@ -93,13 +95,14 @@ def addArticle(request):
             published=published
         )
 
+        # Listout new tags
         new_tags = []
         for tag in tag_list:
             if tag != ' ' and tag != '':
                 if not Tag.objects.filter(name=tag.strip()).exists():
                     new_tags.append(tag.strip())
 
-        # Add tag in to Tag table
+        # Add new tags in to Tag table
         tag_instances = [Tag(name=tag, slug=tag)
                          for tag in new_tags]
         Tag.objects.bulk_create(tag_instances)
@@ -120,8 +123,9 @@ def addArticle(request):
 
 
 @login_required
-def editArticle(request, id):
+def edit_article(request, id):
     article = get_object_or_404(Article, id=id)
+
     # For send data to form as instance
     article_tags = ArticleTag.objects.filter(
         article=article.id).values_list('tag__name', flat=True)
@@ -165,7 +169,6 @@ def editArticle(request, id):
 
         # Add new ArticleTag instance
         add_tags = list(set(new_tags) - set(article_tags))
-        print(add_tags)
         article_tag_instances = [ArticleTag(
             article=article_instance, tag=Tag.objects.get(name=tag)) for tag in add_tags]
 
@@ -194,4 +197,5 @@ def tagged(request, id):
         'articles': articles,
         'article_tags': article_tags,
     }
+
     return render(request, 'article/tags_article.html', context)
