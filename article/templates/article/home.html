@@ -12,29 +12,60 @@
     <div class="row">
         <div class="col-9">
             <h2>Latest Article</h2>
-            <div class="row mb-2">
-                {% for article in articles %}
-                    <div class="col-md-6">
-                        <div class="cards">
-                            <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
-                                <div class="col p-4 d-flex flex-column position-static">
-                                    <h3 class="my-1"><a href="{% url 'detail_article' article.id %}">{{article.title|title}}</a></h3>
-                                    <p class="mb-auto">{{article.content|safe}}</p>
-                                    <div style="display:flex">
-                                        {% for article_tag in article_tags %}
-                                            {% if article_tag.article.id == article.id %}
-                                                <a href="{% url 'tagged' article_tag.tag.id %}" class="mr-1 badge badge-info">{{ article_tag.tag }}</a>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+            <div id="div-article-id" class="row mb-2"></div>
         </div>
-        {% include 'article/common_tags.html'%}
+        <div class="col-3">
+            Common Tags:
+            <p id="common-tags">
+            </p>
+        </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type:"GET",
+            url: "{% url 'home' %}",
+            success: function (data) {
+                const tag_numbers = data.tag_numbers;
+                for (tag_number of tag_numbers) {
+                    var node = document.createElement("A");
+                    node.innerHTML = `${tag_number.tag_count} ${tag_number.tag__name}`;
+                    node.setAttribute("class", "badge badge-success m-1 ");
+                    node.setAttribute("href", `tag/${tag_number.tag__id}/` );
+                    $("#common-tags").append(node);
+                }
+
+                const articles = data.articles;
+                const article_tags_names = data.article_tags_names
+                for (article of articles) {
+                    var divNode = document.createElement("DIV");
+                    divNode.setAttribute("class", "col-md-6")
+                    divNode.innerHTML = `<div class="cards">
+                            <div class="row no-gutters border rounded  flex-md-row mb-4 shadow-sm h-md-250">
+                                <div class="col p-4 d-flex flex-column position-static">
+                                    <h3 class="my-1"><a href="article/${article.id}/" >${article.title}</a></h3>
+                                    <p class="mb-auto">${article.content}</p>
+                                    <div id="tag-article-div-${article.id}"></div>
+                                </div>
+                            </div>
+                        </div>`
+                   $("#div-article-id").append(divNode);
+                    for (article_tags_name of article_tags_names){
+                        var tagNode = document.createElement("A");
+                        tagNode.setAttribute("class", "badge badge-success m-1 ");
+                        if (article_tags_name.article === article.id ) {
+                            tagNode.innerHTML = `${article_tags_name.tag__name}`
+                            tagNode.setAttribute("href", `tag/${article_tags_name.tag}/` );
+                            $(`#tag-article-div-${article.id}`).append(tagNode);
+                        }
+                    }
+                }
+            },
+            error: function (response) {
+                console.log('Error')
+            }
+        });
+    })
+</script>
 {% endblock %}

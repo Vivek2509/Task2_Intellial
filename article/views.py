@@ -1,7 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -21,21 +21,25 @@ def register(request):
 
 
 def view_article(request):
-    articles = Article.objects.filter(published=True).order_by('-created_date')
+    if request.is_ajax():
+        articles = list(Article.objects.filter(published=True).values(
+            'id', 'author__username', 'title', 'content', 'published').order_by('-created_date'))
 
-    article_ids = [article.id for article in articles]
-    article_tags = ArticleTag.objects.filter(article__in=article_ids)
+        article_ids = [article['id'] for article in articles]
+        article_tags = ArticleTag.objects.filter(article__in=article_ids)
+        article_tags_names = list(
+            article_tags.values('article', 'tag__name', 'tag'))
 
-    tag_numbers = article_tags.values(
-        'tag__name', 'tag__id').annotate(tag_count=Count('article'))
+        tag_numbers = list(article_tags.values(
+            'tag__name', 'tag__id').annotate(tag_count=Count('article')))
 
-    context = {
-        'articles': articles,
-        'article_tags': article_tags,
-        'tag_numbers': tag_numbers,
-    }
+        return JsonResponse({
+            'articles': articles,
+            'article_tags_names': article_tags_names,
+            'tag_numbers': tag_numbers,
+        }, safe=False)
 
-    return render(request, 'article/home.html', context)
+    return render(request, 'article/home.html')
 
 
 @login_required
