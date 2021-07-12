@@ -53,7 +53,7 @@
                    $("#div-article-id").append(divNode);
                     for (article_tags_name of article_tags_names){
                         var tagNode = document.createElement("A");
-                        tagNode.setAttribute("class", "badge badge-success m-1 ");
+                        tagNode.setAttribute("class", "mr-1 badge badge-info");
                         if (article_tags_name.article === article.id ) {
                             tagNode.innerHTML = `${article_tags_name.tag__name}`
                             tagNode.setAttribute("href", `tag/${article_tags_name.tag}/` );
